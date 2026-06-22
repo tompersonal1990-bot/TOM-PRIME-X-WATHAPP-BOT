@@ -14,7 +14,22 @@ const axios = require('axios');
 
 // Seamlessly load your official configuration file
 const config = require('./config');
-const handler = require('./handler');
+
+// Smart Handler Resolution (Fixes Linux Case-Sensitivity Bugs)
+let handler;
+try {
+    if (fs.existsSync(path.resolve(__dirname, 'handler.js'))) {
+        handler = require('./handler');
+    } else if (fs.existsSync(path.resolve(__dirname, 'Handler.js'))) {
+        handler = require('./Handler');
+    } else {
+        console.log("⚠️ Case-Safe Warning: Neither handler.js nor Handler.js was directly verified. Falling back to default require.");
+        handler = require('./handler');
+    }
+} catch (e) {
+    console.error("⚠️ Dynamic Handler Loader Exception:", e.message);
+    handler = null; // Fault-tolerant mode
+}
 
 // Global Core Framework Anti-Crash Shielding Layers
 process.on('uncaughtException', (err) => {
@@ -54,7 +69,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.send('👑 TOM PRIME X - MULTI CLIENT PAIRING SERVER IS ONLINE ✅');
+    res.send('👑 TOM PRIME X - SECURE DUAL CORE INFRASTRUCTURE IS LIVE ✅');
 });
 
 global.pairingInstances = global.pairingInstances || {};
@@ -127,7 +142,6 @@ bot.onText(/\/pair/, async (msg) => {
         delete global.pairingInstances[cleanedPhone];
     }
 
-    // Isolated runtime directories generated per paired user dynamically
     const sessionFolder = path.resolve(`./sessions_${cleanedPhone}`);
 
     setTimeout(async () => {
@@ -207,13 +221,15 @@ bot.onText(/\/pair/, async (msg) => {
                     const welcomeText = `*🤖 ᴛᴏᴍ ᴘʀɪᴍᴇ x ʙᴏᴛ ᴏɴʟɪɴᴇ!*\n\n*STATUS:* CONNECTED ✅\n*DEV:* PROFESSOR TOM\n*CHANNEL:* ${WP_CHANNEL}`;
                     await sendWithContact(sock, myJid, welcomeText);
 
-                    if (typeof handler.initializeAntiCall === 'function') handler.initializeAntiCall(sock);
+                    if (handler && typeof handler.initializeAntiCall === 'function') {
+                        handler.initializeAntiCall(sock);
+                    }
                 }
             });
 
             // Message Upsert Pipeline Route
             sock.ev.on('messages.upsert', ({ messages, type }) => {
-                if (type !== 'notify') return;
+                if (type !== 'notify' || !handler) return;
                 for (const msg of messages) {
                     if (!msg.message || !msg.key?.id) continue;
                     const from = msg.key.remoteJid;
@@ -231,7 +247,9 @@ bot.onText(/\/pair/, async (msg) => {
                     }
 
                     try {
-                        handler.handleMessage(sock, msg).catch(() => {});
+                        if (typeof handler.handleMessage === 'function') {
+                            handler.handleMessage(sock, msg).catch(() => {});
+                        }
                         setImmediate(async () => {
                             if (config.autoRead && from.endsWith('@g.us')) {
                                 try { await sock.readMessages([msg.key]); } catch (e) {}
@@ -247,7 +265,7 @@ bot.onText(/\/pair/, async (msg) => {
                 }
             });
 
-            if (typeof handler.handleGroupUpdate === 'function') {
+            if (handler && typeof handler.handleGroupUpdate === 'function') {
                 sock.ev.on('group-participants.update', async (up) => {
                     handler.handleGroupUpdate(sock, up).catch(() => {});
                 });
@@ -290,5 +308,5 @@ bot.onText(/\/pair/, async (msg) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Dedicated Server Engine running on port ${PORT}`);
+    console.log(`🚀 Dedicated Smart-Resolution Server Engine running on port ${PORT}`);
 });
