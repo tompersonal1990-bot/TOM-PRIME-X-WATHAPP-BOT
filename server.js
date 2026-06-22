@@ -145,7 +145,7 @@ function copyCode(){
     `);
 });
 
-// Pair API
+// Pair API - ফিক্স করা ভার্সন
 app.get('/pair', async (req, res) => {
     let { number } = req.query;
     if(!number) return res.json({error: 'Number লাগবে'});
@@ -168,16 +168,23 @@ app.get('/pair', async (req, res) => {
         await delay(3000);
         const code = await sock.requestPairingCode(number);
         
-        sock.ev.once('connection.update', (update) => {
-            if(update.connection === 'open'){
+        // এখানে ফিক্স: ev.once এর বদলে ev.on
+        sock.ev.on('connection.update', (update) => {
+            const { connection } = update;
+            if(connection === 'open'){
                 console.log('✅ Connected:', number);
+                setTimeout(() => sock.ws.close(), 5000);
             }
         });
         
-        setTimeout(() => sock.ws.close(), 30000);
+        setTimeout(() => {
+            try { sock.ws.close() } catch(e) {}
+        }, 30000);
+        
         res.json({code: code});
         
     } catch(e){
+        console.error(e);
         res.json({error: e.message});
     }
 });
