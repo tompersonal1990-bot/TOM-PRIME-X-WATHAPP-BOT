@@ -1,24 +1,14 @@
 {
-    "name": "tom-prime-x-whatsapp-bot",
-    "version": "1.1.0",
-    "description": "Next-Generation WhatsApp MD Bot | Engineered by Professor Tom",
-    "main": "index.js",
-    "type": "commonjs",
-    "scripts": {
-        "start": "node index.js",
-        "dev": "nodemon index.js"
-    },
-    "keywords": ["whatsapp bot", "TOM-PRIME-X", "baileys"],
-    "author": "Professor Tom",
-    "license": "Proprietary",
-    "dependencies": {
-        "@whiskeysockets/baileys": "^6.7.12",
-        "axios": "^1.7.2",
-        "express": "^4.19.2",
-        "node-telegram-bot-api": "^0.66.0",
-        "pino": "^9.0.0"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.0"
-    }
+  "name": "tom-prime-x",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.12",
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "pino": "^9.0.0"
+  }
 }
